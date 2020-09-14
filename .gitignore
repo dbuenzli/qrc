@@ -2,3 +2,4 @@ _b0
 *.install
 _build
 tmp
+test/self_vecs.ml

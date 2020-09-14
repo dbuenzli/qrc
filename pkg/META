@@ -1,0 +1,7 @@
+description = "QR codes for OCaml"
+version = "%%VERSION_NUM%%"
+requires = ""
+archive(byte) = "qrc.cma"
+archive(native) = "qrc.cmxa"
+plugin(byte) = "qrc.cma"
+plugin(native) = "qrc.cmxs"
