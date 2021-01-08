@@ -182,17 +182,15 @@ module Matrix = struct
     let on, off = if invert then "white", "black" else "black", "white" in
     let ( ++ ) acc d = d :: acc in
     let acc =
-      [] ++ "<svg xmlns='http://www.w3.org/2000/svg' \
-             xmlns:l='http://www.w3.org/1999/xlink' version='1.1' " ++
-             "width='" ++ w_mm ++ "mm' " ++ "height='" ++ w_mm ++ "mm' " ++
-             "viewBox='0 0 " ++ w ++ " " ++ w ++ "'>\n" ++
-      " <defs><g id='o'><rect width='1.05' height='1.05' fill='" ++ on ++
-      "'/></g></defs>\n" ++
-      " <rect width='" ++ w ++ "' height='" ++ w ++ "' fill='" ++ off ++ "'/>"
+      [] ++ "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' " ++
+      "width='" ++ w_mm ++ "mm' " ++ "height='" ++ w_mm ++ "mm' " ++
+      "viewBox='0 0 " ++ w ++ " " ++ w ++ "'>\n" ++
+      " <rect width='" ++ w ++ "' height='" ++ w ++ "' fill='" ++ off ++ "'/>" ++
+      " <path style='fill:'" ++ on ++ "' d='"
     in
     let on ~x ~y acc =
-      acc ++ "\n <use l:href='#o' x='" ++ string_of_int x ++ "' y ='" ++
-      string_of_int y ++ "'/>"
+      acc ++ "\n M " ++ string_of_int x ++ "," ++
+      string_of_int y ++ " l 1,0 0,1 -1,0 z"
     in
     let acc = ref acc in
     let pad = if quiet_zone then 4 else 0 in
@@ -201,7 +199,7 @@ module Matrix = struct
         if (get m ~x ~y) then (acc := on ~x:(pad + x) ~y:(pad + y) !acc)
       done;
     done;
-    String.concat "" (List.rev (!acc ++ "\n</svg>"))
+    String.concat "" (List.rev (!acc ++ "\n' /></svg>"))
 end
 
 (* QR code properties *)
