@@ -28,7 +28,9 @@ end
 
 module Bits = struct
   type t = Bytes.t
-  let create len v = Bytes.create (div_round_up len 8) (if v then 255 else 0)
+  let create len v =
+    Bytes.create ~len:(div_round_up len 8) (if v then 255 else 0)
+
   let length b = (Bytes.length b) * 8
   let copy = Bytes.copy
   let[@inline] get bits i =
@@ -92,7 +94,7 @@ module Rs = struct
   (* Generates a polynomial for [ec] error correction bytes. Given [g] the
      generator of [f] this computes the coefficients of the polynomial:
      gen(x) = (x - g^0)(x - g^1)(x - g^ec) *)
-  let gen f ~ec =
+  let gen f ~ec : gen =
     let gen = Array.make (ec + 1) 0 in
     gen.(ec) <- 1; (* gen := 1 *)
     for i = 0 to ec - 1 do (* do gen := gen * (x - g^i) *)
@@ -259,7 +261,7 @@ module Prop = struct
     all_mods - finder_mods - timing_mods - align_pats_mods - version_mods -
     format_info_mods - lone_dark_mod
 
-  let total_bytes (`V version as v) =
+  let total_bytes v =
     (* 'Total number of codewords' in table 9  *)
     (total_modules v) / 8
 
@@ -285,7 +287,7 @@ module Prop = struct
        48;2; 88;4; 132;6; 156;6;
        60;2; 110;5; 160;8; 192;8;
        72;4; 130;5; 192;8; 224;8;
-       (**)
+       (* *)
        80;4; 150;5; 224;8; 264;11;
        96;4; 176;8; 260;10; 308;11;
        104;4; 198;9; 288;12; 352;16;
@@ -296,7 +298,7 @@ module Prop = struct
        180;6; 338;13; 504;18; 588;21;
        196;7; 364;14; 546;21; 650;25;
        224;8; 416;16; 600;20; 700;25;
-       (**)
+       (* *)
        224;8; 442;17; 644;23; 750;25;
        252;9; 476;17; 690;23; 816;34;
        270;9; 504;18; 750;25; 900;30;
@@ -307,7 +309,7 @@ module Prop = struct
        390;13; 728;26; 1050;35; 1260;42;
        420;14; 784;28; 1140;38; 1350;45;
        450;15; 812;29; 1200;40; 1440;48;
-       (**)
+       (* *)
        480;16; 868;31; 1290;43; 1530;51;
        510;17; 924;33; 1350;45; 1620;54;
        540;18; 980;35; 1440;48; 1710;57;
@@ -355,7 +357,7 @@ let encode_padding b ~first ~last = (* see 7.4.10 *)
   (* Pads with alternating 236 and 17 from ~first to ~last. *)
   let rec set_236 i last =
     if i > last then () else (Bytes.set b i 236; set_17 (i + 1) last)
-  and set_17 i max =
+  and set_17 i last =
     if i > last then () else (Bytes.set b i 17; set_236 i last)
   in
   set_236 first last
@@ -538,8 +540,8 @@ let encode_ec v ec_level data =
 
 let mask_fun = function (* see table 10 *)
 | 0 -> fun ~x ~y -> (y + x) mod 2 = 0
-| 1 -> fun ~x ~y -> y mod 2 = 0
-| 2 -> fun ~x ~y -> x mod 3 = 0
+| 1 -> fun ~x:_ ~y -> y mod 2 = 0
+| 2 -> fun ~x ~y:_ -> x mod 3 = 0
 | 3 -> fun ~x ~y -> (y + x) mod 3 = 0
 | 4 -> fun ~x ~y -> ((y / 2) + (x / 3)) mod 2 = 0
 | 5 -> fun ~x ~y -> let yx = (y * x) in (yx mod 2) + (yx mod 3) = 0
@@ -547,7 +549,7 @@ let mask_fun = function (* see table 10 *)
 | 7 -> fun ~x ~y -> (((y + x) mod 2) + ((y * x) mod 3)) mod 2 = 0
 | _ -> assert false
 
-let set_data mask (`V version as v) ec_level data m = (* see 7.7.3 *)
+let set_data mask (`V version as v) data m = (* see 7.7.3 *)
   let mask_fun = mask_fun mask in
   let w = Matrix.w m in
   let skip_version_info = version >= 7 in
@@ -700,7 +702,7 @@ let layout_function_modules v m =
 
 let layout_data version ec_level mask data m =
   set_format_information ec_level mask m;
-  set_data mask version ec_level data m;
+  set_data mask version data m;
   ()
 
 let base_matrix v =
@@ -727,7 +729,7 @@ let encode_matrix ?mask ~version:v ~ec_level ~mode s =
 
 (* Encoding *)
 
-let find_mode ?mode s = match mode with Some m -> m | None -> `Byte
+let find_mode ?mode _s = match mode with Some m -> m | None -> `Byte
 let rec get_best_level_for_version v ~mode ~after ~need =
   (* Sometimes we can fit the same version with the next ec level *)
   let try_next next = match need <= Prop.mode_capacity v next mode with
