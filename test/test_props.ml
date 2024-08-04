@@ -320,7 +320,7 @@ let test_generator_polynomials () =
     done;
     Iset.elements !acc
   in
-  let gens' = List.map (fun ec -> ec, Qrc.Prop.gen field ec) ec_dom in
+  let gens' = List.map (fun ec -> ec, Qrc.Prop.gen field ~ec) ec_dom in
   assert (gens = gens');
   ()
 
