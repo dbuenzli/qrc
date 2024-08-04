@@ -1,4 +1,4 @@
+PKG cmdliner b0.kit
 S src
 S test
-B _build/**
-PKG cmdliner b0
+B _b0/**

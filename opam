@@ -1,24 +1,38 @@
 opam-version: "2.0"
+name: "qrc"
+synopsis: "QR code encoder for OCaml"
+description: """\
+Qrc encodes your data into QR codes. It has built-in QR matrix
+renderers for SVG, ANSI terminal and text.
+
+Qrc is distributed under the ISC license. It has no dependencies.
+
+Homepage: https://erratique.ch/software/qrc"""
 maintainer: "Daniel Bünzli <daniel.buenzl i@erratique.ch>"
-authors: ["The qrc programmers"]
+authors: "The qrc programmers"
+license: "ISC"
+tags: ["qr-code" "codec" "org:erratique"]
 homepage: "https://erratique.ch/software/qrc"
 doc: "https://erratique.ch/software/qrc/doc"
-license: "ISC"
-dev-repo: "git+https://erratique.ch/repos/qrc.git"
 bug-reports: "https://github.com/dbuenzli/qrc/issues"
-tags: [ "qr-code" "codec" "org:erratique" ]
-depends:
-[
-  "ocaml" {>= "4.08.0"}
+depends: [
+  "ocaml" {>= "4.14.0"}
   "ocamlfind" {build}
   "ocamlbuild" {build}
-  "topkg" {build & >= "0.9.0"}
+  "topkg" {build & >= "1.0.3"}
+  "b0" {dev & with-test}
 ]
 depopts: ["cmdliner"]
-conflicts: [ "cmdliner" {< "1.0.4"} ]
-build:
-[[
-  "ocaml" "pkg/pkg.ml" "build"
-          "--dev-pkg" "%{dev}%"
-          "--with-cmdliner" "%{cmdliner:installed}%"
-]]
+conflicts: [
+  "cmdliner" {< "1.3.0"}
+]
+build: [
+  "ocaml"
+  "pkg/pkg.ml"
+  "build"
+  "--dev-pkg"
+  "%{dev}%"
+  "--with-cmdliner"
+  "%{cmdliner:installed}%"
+]
+dev-repo: "git+https://erratique.ch/repos/qrc.git"
