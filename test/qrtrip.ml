@@ -96,6 +96,7 @@ let qrtrip enc format outf invert no_quiet_zone version ec_level mask data  =
 (* Command line interface *)
 
 open Cmdliner
+open Cmdliner.Term.Syntax
 
 let int_range ~lo ~hi kind =
   let err fmt = Format.ksprintf (fun e -> Error (`Msg e)) fmt in
@@ -119,7 +120,7 @@ let format =
      $(b,text) outputs UTF-8 encoded Unicode full blocks, \
      $(b,half) outputs UTF-8 encoded Unicode half blocks."
   in
-  let env = Arg.env_var "QRTRIP_FORMAT" and docv = "FORMAT" in
+  let env = Cmd.Env.info "QRTRIP_FORMAT" and docv = "FORMAT" in
   let fconv = Arg.(some ~none:"ansi or text" (Arg.enum formats)) in
   Arg.(value & opt fconv None & info ~doc ~docv ["f"; "format"] ~env)
 
@@ -175,7 +176,7 @@ let encode =
   let dec = Arg.info ~doc:"Decode a QR code (unimplemented)." ["d"; "decode"] in
   Arg.(value & vflag `Encode  [`Encode, enc; `Decode, dec])
 
-let cmd =
+let qrtrip =
   let doc = "QR encode data" in
   let man = [
     `S Manpage.s_description;
@@ -185,12 +186,13 @@ let cmd =
         See https://erratique.ch/software/qrc for contact information."; ]
   in
   let exits =
-    Term.exit_info ~doc:"on QR code capacity exceeded." 1 ::
-    Term.exit_info ~doc:"on indiscriminate error reported on stderr." 2 ::
-    Term.default_exits
+    Cmd.Exit.info ~doc:"on QR code capacity exceeded." 1 ::
+    Cmd.Exit.info ~doc:"on indiscriminate error reported on stderr." 2 ::
+    Cmd.Exit.defaults
   in
-  Term.(pure qrtrip $ encode $ format $ outf $ invert $ no_quiet_zone $
-        version $ ec_level $ mask $ data),
-  Term.info "qrtrip" ~version:"%%VERSION%%" ~doc ~man ~exits
+  Cmd.v (Cmd.info "qrtrip" ~version:"%%VERSION%%" ~doc ~man ~exits) @@
+  Term.(const qrtrip $ encode $ format $ outf $ invert $ no_quiet_zone $
+        version $ ec_level $ mask $ data)
 
-let () = Term.exit_status @@ Term.eval cmd
+let main () = Cmd.eval' qrtrip
+let () = if !Sys.interactive then () else exit (main ())
