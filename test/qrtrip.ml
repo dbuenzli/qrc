@@ -219,7 +219,9 @@ let qrtrip =
           # QR code for https://example.org";
     `Noblank;
     `Pre "$(iname) $(b,-m https://example.org -o example.svg)"; `Noblank;
-    `Pre "$(iname) $(b,-f svg -m https://example.org > example.svg)";
+    `Pre "$(iname) $(b,-f svg -m https://example.org > example.svg)"; `Noblank;
+    `Pre
+      "$(iname) $(b,-f svg -m https://example.org | show-url -t example.svg)";
     `S Manpage.s_bugs;
     `P "This program is distributed with the Qrc OCaml library.
         See https://erratique.ch/software/qrc for contact information."; ]

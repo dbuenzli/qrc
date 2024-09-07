@@ -5,6 +5,8 @@
 
 (* Generates one QR per version/ec_level with random data. *)
 
+open B0_testing
+
 let strf = Printf.sprintf
 let pr = Printf.printf
 
@@ -21,6 +23,7 @@ let random_data () =
   Bytes.unsafe_to_string b
 
 let gen data =
+  Test.test "generating QR codes for random data." @@ fun () ->
   for v = 1 to 40 do
     let gen version ec_level =
       let mode = `Byte in
@@ -33,9 +36,11 @@ let gen data =
   done
 
 let test seed =
+  Test.main @@ fun () ->
   let seed = random_init seed in
   let data = random_data () in
-  pr "Using random seed %d\n%!" seed; gen data; pr "Done!\n%!"
+  Test.log "Using random seed %d" seed;
+  gen data
 
 let main () =
   let usage = "Usage: test_perf [--seed SEED]" in
@@ -47,4 +52,4 @@ let main () =
   Arg.parse args fail_pos usage;
   test !seed
 
-let () = if !Sys.interactive then () else main ()
+let () = if !Sys.interactive then () else exit (main ())

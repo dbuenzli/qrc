@@ -3,6 +3,8 @@
    SPDX-License-Identifier: ISC
   ---------------------------------------------------------------------------*)
 
+open B0_testing
+
 let div_round_up x y = (x + y - 1) / y
 
 (* The tables from ISO/IEC 18004:2015(E) are highly interdependent, in Qrc
@@ -63,11 +65,11 @@ let test_align_pats (`V version as v) =
   let pat_last = Qrc.Prop.align_pat_last v in
   let pat_delta = Qrc.Prop.align_pat_delta v in
   let p = version_align_pat.(version - 1) in
-  assert (pat_count = Array.length p);
+  Test.int ~__POS__ pat_count (Array.length p);
   for i = 0 to pat_count - 1 do
-    assert
-      ((Qrc.Prop.align_pat_center ~pat_count ~pat_last ~pat_delta i) = p.(i));
-    assert (p.(i) mod 2 = 0); (* We rely on that during data layout. *)
+    Test.int ~__POS__
+      (Qrc.Prop.align_pat_center ~pat_count ~pat_last ~pat_delta i) p.(i);
+    Test.int ~__POS__ (p.(i) mod 2) 0; (* We rely on that during data layout. *)
  done
 
 (* Capacity and error correction blocks *)
@@ -83,7 +85,7 @@ let version_total_bytes =
      2185; 2323; 2465; 2611; 2761; 2876; 3034; 3196; 3362; 3532; 3706; |]
 
 let test_total_bytes (`V v as version) =
-  assert (Qrc.Prop.total_bytes version = version_total_bytes.(v -1))
+  Test.int ~__POS__ (Qrc.Prop.total_bytes version) (version_total_bytes.(v -1))
 
 let version_data_bytes =
   (* 'Number of data codewords' in table 7, indexed by version - 1 and
@@ -133,8 +135,9 @@ let version_data_bytes =
      [|2956;2334;1666;1276|] |]
 
 let test_data_bytes (`V v as version) ec_level_idx =
-  assert (Qrc.Prop.data_bytes version (ec_level_of_idx ec_level_idx) =
-          version_data_bytes.(v - 1).(ec_level_idx))
+  Test.int ~__POS__
+    (Qrc.Prop.data_bytes version (ec_level_of_idx ec_level_idx))
+    version_data_bytes.(v - 1).(ec_level_idx)
 
 let version_block_spec = (* Table 9 *)
   (* From table 9, 'Number of error correction blocks',
@@ -245,32 +248,44 @@ let test_block_spec (`V v as version) ec_level_idx =
   let ec_level = ec_level_of_idx ec_level_idx in
   let f = version_block_spec.(v - 1).(ec_level_idx) in
   let b = block_spec version ec_level in
-  assert (f.(0) = b.g1_blocks);
-  assert (f.(1) = b.g1_data_bytes + b.ec_bytes_per_block);
-  assert (f.(2) = b.g1_data_bytes);
-  if b.g2_blocks = 0 then assert (Array.length f = 3) else
+  Test.int ~__POS__ f.(0) b.g1_blocks;
+  Test.int ~__POS__ f.(1) (b.g1_data_bytes + b.ec_bytes_per_block);
+  Test.int ~__POS__ f.(2) b.g1_data_bytes;
+  if b.g2_blocks = 0 then Test.int ~__POS__ (Array.length f) 3 else
   begin
-    assert (f.(3) = b.g2_blocks);
-    assert (f.(4) = b.g2_data_bytes + b.ec_bytes_per_block);
-    assert (f.(5) = b.g2_data_bytes);
+    Test.int ~__POS__ f.(3) b.g2_blocks;
+    Test.int ~__POS__ f.(4) (b.g2_data_bytes + b.ec_bytes_per_block);
+    Test.int ~__POS__ f.(5) b.g2_data_bytes;
   end
+
+let test_version_props () =
+  Test.test "version properties" @@ fun () ->
+  Test.range ~kind:"Version" ~first:1 ~last:40 @@ fun v ->
+  let v = `V v in
+  test_align_pats v;
+  test_total_bytes v;
+  for ec_level = 0 to 3 do
+    test_data_bytes v ec_level;
+    test_block_spec v ec_level;
+  done
 
 (* Galois field and Reed-Solomon generator polynomials *)
 
 let test_gf_256 () =
+  Test.test "Galois field arithmetic" @@ fun () ->
   let module Gf_256 = Qrc.Gf_256 in
   let f = Lazy.force Qrc.Prop.field in
   for i = 0 to 254 do
-    assert (Gf_256.log f (Gf_256.exp f i) = i);
-    assert (Gf_256.log f (Gf_256.exp f (i + 255)) = i);
+    Test.int ~__POS__ (Gf_256.log f (Gf_256.exp f i)) i;
+    Test.int ~__POS__ (Gf_256.log f (Gf_256.exp f (i + 255))) i;
   done;
   for i = 1 to 255 do
-    assert (Gf_256.exp f (Gf_256.log f i) = i);
-    assert (Gf_256.mul f i (Gf_256.inv f i) = 1);
+    Test.int ~__POS__ (Gf_256.exp f (Gf_256.log f i)) i;
+    Test.int ~__POS__ (Gf_256.mul f i (Gf_256.inv f i)) 1;
   done;
-  assert (Gf_256.exp f 0 = 1);
-  assert (Gf_256.log f 0 = 255);
-  assert (Gf_256.inv f 0 = 0);
+  Test.int ~__POS__ (Gf_256.exp f 0) 1;
+  Test.int ~__POS__ (Gf_256.log f 0) 255;
+  Test.int ~__POS__ (Gf_256.inv f 0) 0;
   ()
 
 let generator_polynomial_exps =
@@ -304,6 +319,7 @@ let generator_polynomial_exps =
   ]
 
 let test_generator_polynomials () =
+  Test.test "generator polynomials" @@ fun () ->
   let field = Lazy.force Qrc.Prop.field in
   let of_exp (ec, exps) = ec, Array.map (Qrc.Gf_256.exp field) exps in
   let gens = List.map of_exp generator_polynomial_exps in
@@ -321,22 +337,14 @@ let test_generator_polynomials () =
     Iset.elements !acc
   in
   let gens' = List.map (fun ec -> ec, Qrc.Prop.gen field ~ec) ec_dom in
-  assert (gens = gens');
+  Test.list ~__POS__ gens gens';
   ()
 
 let main () =
-  for v = 1 to 40 do
-    let v = (`V v) in
-    test_align_pats v;
-    test_total_bytes v;
-    for ec_level = 0 to 3 do
-      test_data_bytes v ec_level;
-      test_block_spec v ec_level;
-    done;
-  done;
+  Test.main @@ fun () ->
+  test_version_props ();
   test_gf_256 ();
   test_generator_polynomials ();
-  Printf.printf "Success!\n%!";
   ()
 
-let () = if !Sys.interactive then () else main ()
+let () = if !Sys.interactive then () else exit (main ())

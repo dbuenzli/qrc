@@ -9,7 +9,7 @@
   it feels natural to specify a file to QR encode. In which case you
   would silently QR encode a file path… The optional argument is now a
   file to read by default. Use option `-m/--message` to treat the
-  argument as the message and make the tool operate as it used to..
+  argument as the message and make the tool operate as it used to.
     
 - `Qrc.Matrix.to_svg`, change matrix rendering strategy. The result doesn't
   use xlink (no risk of identifier clashes when embedding), renders faster in

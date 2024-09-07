@@ -2,16 +2,14 @@ open B0_kit.V000
 
 (* Library names *)
 
-let qrc = B0_ocaml.libname "qrc"
-
+let b0_std = B0_ocaml.libname "b0.std"
 let unix = B0_ocaml.libname "unix"
 let cmdliner = B0_ocaml.libname "cmdliner"
+let qrc = B0_ocaml.libname "qrc"
 
 (* Libraries *)
 
-let qrc_lib =
-  let srcs = [ `Dir ~/"src" ] in
-  B0_ocaml.lib qrc ~srcs
+let qrc_lib = B0_ocaml.lib qrc ~srcs:[`Dir ~/"src"]
 
 (* Tools *)
 
@@ -22,18 +20,12 @@ let qrtrip_tool =
 
 (* Tests *)
 
-let test ?doc ?run:(r = true) ?(requires = []) ?(srcs = []) src =
-  let srcs = (`File src) :: srcs in
-  let requires = qrc :: requires in
-  let meta = B0_meta.(empty |> tag test |> ~~ run r) in
-  let name = Fpath.basename ~strip_ext:true src in
-  B0_ocaml.exe name ~srcs ~requires ~meta ?doc
-
+let test ?(requires = []) = B0_ocaml.test ~requires:(qrc :: b0_std :: requires)
 let test_perf = test ~/"test/test_perf.ml"
 let test_props = test ~/"test/test_props.ml"
-let test_self_props =
-  test ~run:false ~/"test/self_test.ml" ~srcs:[`File ~/"test/self_vecs.ml"]
 
+let test_vecs =
+  test ~/"test/test_vecs.ml" ~run:true ~srcs:[`File ~/"test/vecs.ml"]
 
 (* Packs *)
 
