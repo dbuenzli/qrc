@@ -7,23 +7,17 @@
 
 open B0_testing
 
-let strf = Printf.sprintf
-let pr = Printf.printf
-
-let random_init seed =
-  let seed = match seed with
-  | Some seed -> seed | None -> Random.self_init (); Random.int 10000
-  in
-  Random.init seed; seed
-
-let random_data () =
+let random_data st =
   let max = Qrc.Prop.mode_capacity (`V 40) `L `Byte in
   let b = Bytes.create max in
-  for i = 0 to max - 1 do Bytes.set b i (Char.chr (Random.int 256)) done;
+  for i = 0 to max - 1 do
+    Bytes.set b i (Char.chr (Random.State.int st 256))
+  done;
   Bytes.unsafe_to_string b
 
-let gen data =
+let test_gen data =
   Test.test "generating QR codes for random data." @@ fun () ->
+  let data = random_data (Test.Rand.state ()) in
   for v = 1 to 40 do
     let gen version ec_level =
       let mode = `Byte in
@@ -35,21 +29,10 @@ let gen data =
     List.iter (gen (`V v)) [ `L; `M; `Q; `H ]
   done
 
-let test seed =
-  Test.main @@ fun () ->
-  let seed = random_init seed in
-  let data = random_data () in
-  Test.log "Using random seed %d" seed;
-  gen data
-
 let main () =
-  let usage = "Usage: test_perf [--seed SEED]" in
-  let seed = ref None  in
-  let args =
-    [ "--seed", Arg.Int (fun i -> seed := Some i), "Seed for random data." ]
-  in
-  let fail_pos s = raise (Arg.Bad (strf "Don't know what to do with %S" s)) in
-  Arg.parse args fail_pos usage;
-  test !seed
+  Test.main @@ fun () ->
+  Test.Cli.parse ();
+  test_gen ();
+  ()
 
 let () = if !Sys.interactive then () else exit (main ())
