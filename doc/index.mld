@@ -3,9 +3,22 @@
 Qrc encodes your data into QR codes. It has built-in QR matrix
 renderers for SVG, ANSI terminal and text.
 
-{1:api API}
+See the {{!quick}quick start}.
+
+{1:qrc Library [qrc]}
 
 {!modules:
 Qrc
 Qrc_fmt
 }
+
+{1:quick Quick start}
+
+  The following generates a QR code matrix for the given [data] bytes
+  and outputs it as an SVG image on [stdout].
+
+{[
+  let output_svg_qr data = match Qrc.encode data with
+  | None -> prerr_endline "Data capacity exceeded!"
+  | Some m -> print_endline (Qrc.Matrix.to_svg m)
+]}

@@ -5,8 +5,8 @@
 
 (** QR code encoder.
 
-    Consult the {{!notes_limits}limitations} and an encoding
-    {{!example}example}.
+    Consult the {{!notes_limits}limitations} and the {{!page-index.quick}
+    quick start}.
 
     {b References.}
 
@@ -127,7 +127,7 @@ end
 
 (** QR code properties.
 
-    Except for {!mode_capacity}, not for the casual user. *)
+    Except for {!Prop.mode_capacity}, not for the casual user. *)
 module Prop : sig
 
   (** {1:version Version} *)
@@ -257,7 +257,7 @@ val encode :
 
 (** {1:notes_limits Notes and limitations}
 
-    {2:encoding Encoding}
+    {2:encoding_limits Encoding}
 
     {ul
     {- Only the (universal) byte mode data encoding is supported. This may
@@ -271,14 +271,3 @@ val encode :
        understand the ECI scheme.}
     {- Structured append, i.e. data represented by up to 16 linked QR codes,
        is not supported – who does ?}} *)
-
-(** {1:example Example}
-
-    The following generates a QR code matrix for the given [data] bytes
-    and outputs it as an SVG image on [stdout].
-{[
-  let output_svg_qr data = match Qrc.encode data with
-  | None -> prerr_endline "Data capacity exceeded!"
-  | Some m -> print_endline (Qrc.Matrix.to_svg m)
-]}
-*)

@@ -27,6 +27,8 @@ let test_props = test ~/"test/test_props.ml"
 let test_vecs =
   test ~/"test/test_vecs.ml" ~run:true ~srcs:[`File ~/"test/vecs.ml"]
 
+let examples = test ~/"test/examples.ml"
+
 (* Packs *)
 
 let default =
