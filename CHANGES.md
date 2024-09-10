@@ -1,5 +1,9 @@
+v0.2.0 2024-09-10 Zagreb 
+------------------------
 
-- Require OCaml 4.14.0.
+- `Qrc.Matrix.to_svg`, change matrix rendering strategy. The result doesn't
+  use xlink (no risk of identifier clashes when embedding), renders faster in
+  browsers and is more compact (#1). Thanks to Alain Frisch for the patch.
 
 - `qrtrip` tool. Fix `stdin` reading bug, newlines were being dropped
   and arbitrary binary input was impossible (#5).
@@ -10,10 +14,8 @@
   would silently QR encode a file path… The optional argument is now a
   file to read by default. Use option `-m/--message` to treat the
   argument as the message and make the tool operate as it used to.
-    
-- `Qrc.Matrix.to_svg`, change matrix rendering strategy. The result doesn't
-  use xlink (no risk of identifier clashes when embedding), renders faster in
-  browsers and is more compact (#1). Thanks to Alain Frisch for the patch.
+
+- Require OCaml 4.14.0.
 
 v0.1.0 2020-10-22 Zagreb
 ------------------------
