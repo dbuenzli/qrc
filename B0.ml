@@ -25,7 +25,8 @@ let test_perf = test ~/"test/test_perf.ml"
 let test_props = test ~/"test/test_props.ml"
 
 let test_vecs =
-  test ~/"test/test_vecs.ml" ~run:true ~srcs:[`File ~/"test/vecs.ml"]
+  let requires = [cmdliner] in
+  test ~/"test/test_vecs.ml" ~run:true ~requires ~srcs:[`File ~/"test/vecs.ml"]
 
 let examples = test ~/"test/examples.ml"
 

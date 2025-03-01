@@ -258,7 +258,7 @@ let test_block_spec (`V v as version) ec_level_idx =
     Test.int ~__POS__ f.(5) b.g2_data_bytes;
   end
 
-let test_version_props () =
+let test_version_props =
   Test.test "version properties" @@ fun () ->
   Test.range ~kind:"Version" ~first:1 ~last:40 @@ fun v ->
   let v = `V v in
@@ -271,7 +271,7 @@ let test_version_props () =
 
 (* Galois field and Reed-Solomon generator polynomials *)
 
-let test_gf_256 () =
+let test_gf_256 =
   Test.test "Galois field arithmetic" @@ fun () ->
   let module Gf_256 = Qrc.Gf_256 in
   let f = Lazy.force Qrc.Prop.field in
@@ -318,7 +318,7 @@ let generator_polynomial_exps =
           192; 180|]
   ]
 
-let test_generator_polynomials () =
+let test_generator_polynomials =
   Test.test "generator polynomials" @@ fun () ->
   let field = Lazy.force Qrc.Prop.field in
   let of_exp (ec, exps) = ec, Array.map (Qrc.Gf_256.exp field) exps in
@@ -337,14 +337,8 @@ let test_generator_polynomials () =
     Iset.elements !acc
   in
   let gens' = List.map (fun ec -> ec, Qrc.Prop.gen field ~ec) ec_dom in
-  Test.list ~__POS__ gens gens';
+  Test.(list T.any) gens gens' ~__POS__;
   ()
 
-let main () =
-  Test.main @@ fun () ->
-  test_version_props ();
-  test_gf_256 ();
-  test_generator_polynomials ();
-  ()
-
+let main () = Test.main @@ fun () -> Test.autorun ()
 let () = if !Sys.interactive then () else exit (main ())

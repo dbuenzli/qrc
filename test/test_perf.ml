@@ -15,7 +15,7 @@ let random_data st =
   done;
   Bytes.unsafe_to_string b
 
-let test_gen data =
+let test_gen =
   Test.test "generating QR codes for random data." @@ fun () ->
   let data = random_data (Test.Rand.state ()) in
   for v = 1 to 40 do
@@ -29,10 +29,5 @@ let test_gen data =
     List.iter (gen (`V v)) [ `L; `M; `Q; `H ]
   done
 
-let main () =
-  Test.main @@ fun () ->
-  Test.Cli.parse ();
-  test_gen ();
-  ()
-
+let main () = Test.main @@ fun () -> Test.autorun ()
 let () = if !Sys.interactive then () else exit (main ())
