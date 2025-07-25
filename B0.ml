@@ -52,7 +52,7 @@ let default =
      [ "ocaml", {|>= "4.14.0"|};
        "ocamlfind", {|build|};
        "ocamlbuild", {|build|};
-       "topkg", {|build & >= "1.0.3"|};
+       "topkg", {|build & >= "1.1.0"|};
        "b0", {|dev & with-test|};
      ]
    |> B0_meta.tag B0_opam.tag
