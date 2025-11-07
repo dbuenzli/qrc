@@ -65,19 +65,21 @@ let test_vectors =
 
 let main () =
   let action =
-    let open Cmdliner in
-    let gen = Arg.info ["gen"] ~doc:"Generate vectors in $(b,test/vecs.ml)" in
-    Arg.(value & vflag `Test [`Gen, gen])
+    let doc = "Generate vectors in $(b,test/vecs.ml)" in
+    Cmdliner.Arg.(value & vflag `Test [`Gen, info ["gen"] ~doc])
   in
-  Test.main' action @@ fun action ->
-  let data = random_data 1031 in
-  match action with
-  | `Gen -> gen data "test/vecs.ml"
-  | `Test ->
-      if Array.length Vecs.version = 40 then test_vectors data else
-      Test.log "@[<v>%a, generate them BEFORE making changes with:@,%a@]"
-        (Fmt.st [`Fg (`Yellow)]) "No test vectors"
-        Fmt.code "b0 -- test_vecs --gen"
+  Test.main' @@
+  let open Cmdliner.Term.Syntax in
+  let+ action in
+  fun () ->
+    let data = random_data 1031 in
+    match action with
+    | `Gen -> gen data "test/vecs.ml"
+    | `Test ->
+        if Array.length Vecs.version = 40 then test_vectors data else
+        Test.log "@[<v>%a, generate them BEFORE making changes with:@,%a@]"
+          (Fmt.st [`Fg (`Yellow)]) "No test vectors"
+          Fmt.code "b0 -- test_vecs --gen"
 
 
 let () = if !Sys.interactive then () else exit (main ())
