@@ -77,7 +77,7 @@ let main () =
     | `Gen -> gen data "test/vecs.ml"
     | `Test ->
         if Array.length Vecs.version = 40 then test_vectors data else
-        Test.log "@[<v>%a, generate them BEFORE making changes with:@,%a@]"
+        Test.Log.msg "@[<v>%a, generate them BEFORE making changes with:@,%a@]"
           (Fmt.st [`Fg (`Yellow)]) "No test vectors"
           Fmt.code "b0 -- test_vecs --gen"
 
